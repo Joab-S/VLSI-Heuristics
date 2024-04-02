@@ -1,0 +1,10 @@
+.env
+venv/
+*.pyc
+.local/
+.bash_history
+.python_history
+__pycache__
+.cache/
+.config/
+docker/cplex/cplex_studio2211.linux_x86_64.bin

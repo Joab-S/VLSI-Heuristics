@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  cplex-container:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - .:/home/cplex
+    working_dir: /home/cplex
+    stdin_open: true
+    tty: true
+    command: /bin/bash

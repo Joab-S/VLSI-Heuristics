@@ -4,19 +4,31 @@
 https://drive.google.com/uc?export=download&id=1fXyw6id8sfnEuveO5PwYbXUAYSNnl5oX
 ## Após o download pelo link direto, coloque o arquivo baixado no diretório 'docker/cplex/'
 
-## Em um terminal faça: Iniciar o contêiner Docker
-## (use o --build caso seja a primeira vez subindo o projeto) 
-## Caso queria parar o container, pode usar Ctrl + c
-docker-compose up --build
+## Iniciar o contêiner Docker
+<p>
+Em um terminal faça:
+```docker-compose up --build```
+(use o --build caso seja a primeira vez subindo o projeto) 
+Caso queria parar o container, pode usar Ctrl + c
+</p>
 
-## Em outro terminal faça: abrir o terminal do container 
-docker-compose exec cplex-container /bin/bash
 
-## Nesse terminal do container faça: instalar as dependências do projeto
-pip install -r docker/requirements.txt
+## Abrir o terminal do container 
+<p>
+Em outro terminal faça: abrir o terminal do container 
+```docker-compose exec cplex-container /bin/bash```
+</p>
 
-## Agora fique a vontade para rodar o projeto
-python main.py
+## Instalar as dependências do projeto
+<p>
+Nesse terminal do container faça:
+```pip install -r docker/requirements.txt```
+</p>
+
+## Rodar o projeto
+<p>
+```python main.py```
+</p>
 
 ## Use o comando abaixo para *parar* e *remover* os containers criados pelo 'up'
 docker-compose down

@@ -16,11 +16,11 @@ pip install -r docker/requirements.txt
 # Agora fique a vontade para rodar o projeto
 python main.py
 
-# Use o comando abaixo para parar e  remover os containers criados pelo 'up'
+# Use o comando abaixo para *parar* e *remover* os containers criados pelo 'up'
 docker-compose down
 
-# Use o comando abaixo para parar o container para ser reiniciado mais tarde:
+# Use o comando abaixo para *parar* o container para ser reiniciado mais tarde:
 docker-compose stop
 
-# Para iniciar os containers novamente sem reconstruir:
+# Para *iniciar* os containers novamente sem reconstruir:
 docker-compose start

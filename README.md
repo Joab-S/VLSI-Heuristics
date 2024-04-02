@@ -5,7 +5,7 @@ https://drive.google.com/uc?export=download&id=1fXyw6id8sfnEuveO5PwYbXUAYSNnl5oX
 # Em um terminal faça: Iniciar o contêiner Docker
 # (use o --build caso seja a primeira vez subindo o projeto) 
 # Caso queria parar o container, pode usar Ctrl + c
-docker-compose up --build
+$ docker-compose up --build
 
 # Em outro terminal faça: abrir o terminal do container 
 docker-compose exec cplex-container /bin/bash

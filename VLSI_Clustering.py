@@ -15,6 +15,36 @@ class VLSIClustering:
         self.k = k
         self.model = None
         self.result = None
+    
+    def build_minimax_cg_vlsi_model(self, min_group_size_factor=1, max_group_size_factor=1.5):
+        """
+        mmcg: Minimun and Maximum Cardinality Grouping
+        """
+        n_blocks = len(self.I.block) - 1        
+        self.model = ConcreteModel()
+        self.model.x = Var(range(n_blocks), range(n_blocks), within=Binary)
+
+        mu, sigma = self._mu_sigma(self._network_count())
+
+        self.model.obj = Objective(expr=sum(self.model.x[i, j] * ((self._network_count()[i][j] - mu) / sigma)
+                                for i in range(n_blocks) for j in range(i + 1, n_blocks)),
+                        sense=maximize)
+
+        self.model.constraints = ConstraintList()   
+        # Adicionando restrições de tamanho mínimo e máximo para os grupos
+        for k in range(2, n_blocks):
+            for j in range(1, k):
+                for i in range(j):
+                    self.model.constraints.add(self.model.x[i, k] + 1 >= self.model.x[i, j] + self.model.x[j, k])
+
+        min_group_size = int(self.k * min_group_size_factor)
+        max_group_size = int(self.k * max_group_size_factor)
+        print(f"min_group_size_factor: {min_group_size}, max_group_size_factor {max_group_size}")
+
+        for i in range(n_blocks):
+            self.model.constraints.add(sum(self.model.x[i, j] for j in range(n_blocks) if i != j) >= min_group_size)
+            self.model.constraints.add(sum(self.model.x[i, j] for j in range(n_blocks) if i != j) <= max_group_size)
+
 
     def build_mcg_vlsi_model(self):
         """

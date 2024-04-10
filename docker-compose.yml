@@ -7,7 +7,16 @@ services:
       dockerfile: ./docker/Dockerfile
     volumes:
       - .:/home/cplex
+      - ./image:/home/cplex/image
     working_dir: /home/cplex
     stdin_open: true
     tty: true
     command: /bin/bash
+
+# volumes:
+  # image:
+    # driver: local
+    # driver_opts:
+      # type: 'none'
+      # o: 'bind'
+      # device: '/home/cplex/image' 

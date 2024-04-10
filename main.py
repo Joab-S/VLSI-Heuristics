@@ -8,7 +8,8 @@ from plot_VLSI import plot_VLSI
 
 def main():
     # Ler o arquivo YAL
-    I = read("yal_instances/ami49.yal")
+    instance = 'hp'
+    I = read(f"yal_instances/{instance}.yal")
 
     # Calcular número de blocos
     num_blocks = len(I.block)
@@ -16,10 +17,12 @@ def main():
 
     # Calcular tamanho do cluster
     k = int(math.sqrt(num_blocks))
+    print(f'k: {k}')
 
     # Realizar clustering
     clustering = VLSIClustering(I, k)
-    clustering.build_mcg_vlsi_model()
+    #clustering.build_mcg_vlsi_model()
+    clustering.build_minimax_cg_vlsi_model()
     clustering.solve_cplex()
 
     # Obter grupos de blocos
@@ -44,22 +47,8 @@ def main():
 #        print(R.V[i])
 #
 #    # Plotar o layout VLSI
-#    plot_VLSI(I, range(len(I.block)-1))
-
+    plot_VLSI(I, range(len(I.block)-1), instance)
+    print(f"Grupos para k = {k}:{[i[:-1] for i in groups]}")
+    
 if __name__ == "__main__":
     main()
-
-
-"""
-import random
-from sliding_window import sliding_window
-
-I = read("yal_instances/hp.yal")
-print(f"Blocks = {len(I.block)}, Nets = {len(I.network)}")
-n_blocks = len(I.block)-1
-print(f"n_blocks: {n_blocks}")
-order = random.sample(range(n_blocks), n_blocks)
-print(f"order: {order}")
-sliding_window(I, 1, order)
-plot_VLSI(I, order)
-"""

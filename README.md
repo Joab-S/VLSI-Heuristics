@@ -31,3 +31,7 @@ docker-compose stop
 
 ## Para *iniciar* os containers novamente sem reconstruir:
 docker-compose start
+
+
+# ARTIGO LETÍCIA LEITE
+https://repositorio.unesp.br/server/api/core/bitstreams/ca6d9ea0-88b8-4653-a615-bee729fb2684/content

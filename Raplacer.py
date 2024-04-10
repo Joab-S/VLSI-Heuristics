@@ -18,11 +18,11 @@ class Replacer:
     print(self.S)
     self.model:pyo.Model = None
 
-  def placement(self):
+  def placement(self, tee = False):
     """Given an instance and a (possibly partial) sequence pair,
     calculates the ideal placement and measurement of the blocks"""
     self.build_model()
-    return self.solve_model()
+    return self.solve_model(tee=tee)
 
   def build_model(self):
     """Builds the IP model to solve the placement problem"""
@@ -110,12 +110,9 @@ class Replacer:
     self.model.obj = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
 
 
-  def solve_model(self):
-    #opt = SolverFactory('glpk', executable='/usr/bin/glpsol')
-    #opt = SolverFactory('cbc', executable='/usr/bin/cbc')
-    #opt = SolverFactory('cplex', executable=os.environ.get('CPLEX_EXECUTABLE'))
+  def solve_model(self, tee = False):
     opt = SolverFactory('cplex_direct')
-    results = opt.solve(self.model)
+    results = opt.solve(self.model, tee=tee)
     #self.model.solutions.store_to(results)
 
     print(results)
@@ -149,5 +146,5 @@ class Replacer:
     #    # Something else is wrong
     #    print("Solver Status: ",  result.solver.status)
 
-
+    print(f"hpwl_value: {self.I.hpwl_value}")
     return self.I

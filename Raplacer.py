@@ -2,8 +2,9 @@ import pyomo.environ as pyo
 from pyomo.environ import *
 from pyomo.opt import SolverFactory
 from VLSI_class import VLSI
-from relpos import relpos
+from Representation import relpos
 import os
+import math
 
 class Replacer:
   def __init__(self, I:VLSI, R:relpos, S:list[int]=None):
@@ -15,14 +16,14 @@ class Replacer:
     self.R = R
     self.S = S
     self.S.append(len(I.block)-1)
-    print(self.S)
+    #print(self.S)
     self.model:pyo.Model = None
 
-  def placement(self, tee = False):
+  def placement(self, timelimit = 3600):
     """Given an instance and a (possibly partial) sequence pair,
     calculates the ideal placement and measurement of the blocks"""
     self.build_model()
-    return self.solve_model(tee=tee)
+    return self.solve_model(timelimit)
 
   def build_model(self):
     """Builds the IP model to solve the placement problem"""
@@ -31,12 +32,12 @@ class Replacer:
     ### Variables ###
 
     # Sets
-    self.model.Networks = pyo.RangeSet(0,len(self.I.network)-1)
+    self.model.Networks = pyo.RangeSet(0,len(self.I.network))
     self.model.Blocks = pyo.RangeSet(0,len(self.S)-1)
 
     # Large area variables
-    self.model.W = pyo.Var(bounds=(0, None))
-    self.model.L = pyo.Var(bounds=(0, None))
+    #self.model.W = pyo.Var(bounds=(0, None))
+    #self.model.L = pyo.Var(bounds=(0, None))
 
     # WN & LN: HPWL variables
     self.model.WN = pyo.Var(self.model.Networks, bounds=(0, None))
@@ -47,7 +48,7 @@ class Replacer:
     def length_stretch(model, i):return (self.I.block[self.S[i]].minl, self.I.block[self.S[i]].maxl)
     self.model.WB = pyo.Var(self.model.Blocks, bounds=width_stretch)
     self.model.LB = pyo.Var(self.model.Blocks, bounds=length_stretch)
-
+    
     # XB & YB: Block (X,Y) coordinates
     self.model.XB = pyo.Var(self.model.Blocks, bounds=(0, None))
     self.model.YB = pyo.Var(self.model.Blocks, bounds=(0, None))
@@ -78,11 +79,13 @@ class Replacer:
 
     # Maximum Area Constraint
     for b in range(len(self.S)-1):
-      self.model.constraints.add(self.model.XB[b] + self.model.WB[b] <= self.model.W)
-      self.model.constraints.add(self.model.YB[b] + self.model.LB[b] <= self.model.L)
+      self.model.constraints.add(self.model.XB[b] + self.model.WB[b] <= self.model.WB[len(self.S)-1])
+      self.model.constraints.add(self.model.YB[b] + self.model.LB[b] <= self.model.LB[len(self.S)-1])
 
+    self.model.constraints.add(self.model.XB[len(self.S)-1] <= 0)
+    self.model.constraints.add(self.model.YB[len(self.S)-1] <= 0)
     # Horizontal & Vertical relation constraints
-    # Pairs ordered by the sequence pair (linear constraints)
+    # Pairs ordered by the relative position (linear constraints)
     for a in range(len(self.S)-1):
       for b in range(len(self.S)-1):
         if self.R.H[self.S[a]][self.S[b]]:
@@ -90,7 +93,7 @@ class Replacer:
         elif self.R.V[self.S[a]][self.S[b]]:
           self.model.constraints.add(self.model.YB[a] + self.model.LB[a] <= self.model.YB[b])
     # Unordered pairs (integer BIGM constrains)
-    BIGM = 1e+6 #Define BIGM
+    BIGM = 2*(self.I.block[-1].w + self.I.block[-1].l) + 1 #Define BIGM
     for b in range(len(self.S)-1):
       for a in range(b):
         if (self.R.H[self.S[a]][self.S[b]] + self.R.H[self.S[b]][self.S[a]]
@@ -110,41 +113,52 @@ class Replacer:
     self.model.obj = pyo.Objective(rule=obj_rule, sense=pyo.minimize)
 
 
-  def solve_model(self, tee = False):
+  def solve_model(self, timelimit = 3600):
     opt = SolverFactory('cplex_direct')
-    results = opt.solve(self.model, tee=tee)
-    #self.model.solutions.store_to(results)
+    opt.options['threads'] = 1
+    opt.options['timelimit'] = timelimit
+    opt.options['lpmethod'] = 3
+    results = opt.solve(self.model, tee=False)
 
-    print(results)
-    #self.model.pprint()
-
-    #if (results.solver.status == SolverStatus.ok) and (results.solver.termination_condition == TerminationCondition.optimal):
+    if (results.solver.status == SolverStatus.ok) or \
+      results.solver.termination_condition == TerminationCondition.maxTimeLimit: #and (results.solver.termination_condition == TerminationCondition.optimal):
         # Do something when the solution in optimal and feasible
-    for j in range(len(self.S)):
-      self.I.block[self.S[j]].w = self.model.WB[j].value
-      self.I.block[self.S[j]].l = self.model.LB[j].value
-      self.I.block[self.S[j]].x = self.model.XB[j].value
-      self.I.block[self.S[j]].y = self.model.YB[j].value
-    self.I.W = self.model.W.value
-    self.I.L = self.model.L.value
-    self.I.hpwl_value = self.model.obj()
+      for j in range(len(self.S)):
+        self.I.block[self.S[j]].w = self.model.WB[j].value
+        self.I.block[self.S[j]].l = self.model.LB[j].value
+        self.I.block[self.S[j]].x = self.model.XB[j].value
+        self.I.block[self.S[j]].y = self.model.YB[j].value
+      self.I.W = self.model.WB[len(self.S)-1].value
+      self.I.L = self.model.LB[len(self.S)-1].value
+      self.I.hpwl_value = self.model.obj()
 
-    for b in range(len(self.S)-1):
-      for a in range(b):
-        if   (self.model.alpha[a,b].value == 1 and self.model.beta[a,b].value == 1):
-          self.R.H[self.S[a]][self.S[b]] = 1
-        elif (self.model.alpha[a,b].value == 0 and self.model.beta[a,b].value == 0):
-          self.R.H[self.S[b]][self.S[a]] = 1
-        elif (self.model.alpha[a,b].value == 0 and self.model.beta[a,b].value == 1):
-          self.R.V[self.S[a]][self.S[b]] = 1
-        elif (self.model.alpha[a,b].value == 1 and self.model.beta[a,b].value == 0):
-          self.R.V[self.S[b]][self.S[a]] = 1
+      for b in range(len(self.S)-1):
+        for a in range(b):
+          if   (self.model.alpha[a,b].value == 1 and self.model.beta[a,b].value == 1):
+            self.R.H[self.S[a]][self.S[b]] = 1
+          elif (self.model.alpha[a,b].value == 0 and self.model.beta[a,b].value == 0):
+            self.R.H[self.S[b]][self.S[a]] = 1
+          elif (self.model.alpha[a,b].value == 0 and self.model.beta[a,b].value == 1):
+            self.R.V[self.S[a]][self.S[b]] = 1
+          elif (self.model.alpha[a,b].value == 1 and self.model.beta[a,b].value == 0):
+            self.R.V[self.S[b]][self.S[a]] = 1
+    
+    elif results.solver.termination_condition == TerminationCondition.infeasible:
+      print(" ** Infeasible ** ")
+      self.I.hpwl_value = math.inf
+      self.model.write("model.lp", io_options={'symbolic_solver_labels': True})
+      #exit(0)
+    else:
+      # Tratamento para outras condições de término
+      print(f"Solver Status: {results.solver.status}")
+      print(f"Termination Condition: {results.solver.termination_condition}")
+      #exit(0)
 
-    #elif (results.solver.termination_condition == TerminationCondition.infeasible):
-    #    print(" ** Infeasible ** ")
-    #else:
-    #    # Something else is wrong
-    #    print("Solver Status: ",  result.solver.status)
-
-    print(f"hpwl_value: {self.I.hpwl_value}")
-    return self.I
+    #print(f"hpwl_value: {self.I.hpwl_value}")
+    #return self.I
+    return {
+      "vlsi": self.I,
+      "status": results.solver.status,
+      "termination_condition": results.solver.termination_condition,
+      "infeasible": results.solver.termination_condition == TerminationCondition.infeasible
+    }

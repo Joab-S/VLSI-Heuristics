@@ -1,0 +1,100 @@
+{
+    "instance": "hp",
+    "malleable": true,
+    "image_name": "i_hp_malleable_True_hpwl_143569.png",
+    "hpwl": "143569.98833333334",
+    "time": 1.817734718322754,
+    "status": "ok",
+    "termination_condition": "optimal",
+    "infeasible": false
+},
+{
+    "instance": "hp",
+    "malleable": false,
+    "image_name": "i_hp_malleable_False_hpwl_153538.png",
+    "hpwl": "153538.0",
+    "time": 0.8644788265228271,
+    "status": "ok",
+    "termination_condition": "optimal",
+    "infeasible": false
+}
+{
+    "instance": "xerox",
+    "malleable": true,
+    "image_name": "i_xerox_malleable_True_hpwl_378378.png",
+    "hpwl": "378378.0",
+    "time": 9.056018114089966,
+    "status": "ok",
+    "termination_condition": "optimal",
+    "infeasible": false
+}
+{
+    "instance": "xerox",
+    "malleable": false,
+    "image_name": "i_xerox_malleable_False_hpwl_378826.png",
+    "hpwl": "378826.00000000035",
+    "time": 3.3677191734313965,
+    "status": "ok",
+    "termination_condition": "optimal",
+    "infeasible": false
+}
+{
+    "instance": "apte",
+    "malleable": true,
+    "image_name": "i_apte_malleable_True_hpwl_inf.png",
+    "hpwl": "inf",
+    "time": 0.4896531105041504,
+    "status": "warning",
+    "termination_condition": "infeasible",
+    "infeasible": true
+}
+{
+    "instance": "apte",
+    "malleable": false,
+    "image_name": "i_apte_malleable_False_hpwl_516285.png",
+    "hpwl": "516285.0",
+    "time": 0.5126936435699463,
+    "status": "ok",
+    "termination_condition": "optimal",
+    "infeasible": false
+}
+{
+    "instance": "ami33",
+    "malleable": true,
+    "image_name": "i_ami33_malleable_True_hpwl_57122.png",
+    "hpwl": "57122.117224848706",
+    "time": 3646.889121055603,
+    "status": "aborted",
+    "termination_condition": "maxTimeLimit",
+    "infeasible": false
+}
+{
+    "instance": "ami33",
+    "malleable": false,
+    "image_name": "i_ami33_malleable_False_hpwl_62551.png",
+    "hpwl": "62551.999999996035",
+    "time": 3651.0544679164886,
+    "status": "aborted",
+    "termination_condition": "maxTimeLimit",
+    "infeasible": false
+}
+{
+    "instance": "ami49",
+    "malleable": true,
+    "image_name": "i_ami49_malleable_True_hpwl_754674.png",
+    "hpwl": "754674.7151459854",
+    "time": 4081.4077639579773,
+    "status": "aborted",
+    "termination_condition": "maxTimeLimit",
+    "infeasible": false
+}
+{
+    "instance": "ami49",
+    "malleable": false,
+    "image_name": "i_ami49_malleable_False_hpwl_764470.png",
+    "hpwl": "764470.0",
+    "time": 4106.2059552669525,
+    "status": "aborted",
+    "termination_condition": "maxTimeLimit",
+    "infeasible": false
+}

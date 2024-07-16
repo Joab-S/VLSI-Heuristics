@@ -16,33 +16,19 @@ def run(instance: str, is_fixed_edge: bool, log_file):
     num_blocks = len(I.block)
     print(f"{instance} - Blocks = {num_blocks}, Nets = {len(I.network)}")
 
-    # Calcular tamanho do cluster
     k = int(math.sqrt(num_blocks))
-    print(f'k: {k}')
-
-    timelimit = 10800    # 3 horas
     start = time.time()
 
     # Realizar clustering
     clustering = VLSIClustering(I, k)
-    #clustering.build_max_cardinality_grouping(is_max=False)
-    clustering.build_minimax_cardinality_grouping(is_max=False)
-    print(f"Entrou no clustering às {(datetime.datetime.now().astimezone(datetime.timezone(datetime.timedelta(hours=-3)))).strftime('%H:%M')}")
-
-    clustering.solve_cplex()
+    print(f"Entrou no k-means às {(datetime.datetime.now().astimezone(datetime.timezone(datetime.timedelta(hours=-3)))).strftime('%H:%M')}")
 
     # Obter grupos de blocos
-    groups = clustering.get_groups()
+    n_clusters = round((num_blocks-1)/k)
+    print(f"n_clusters: {n_clusters}")
+    groups = clustering.build_kmeans_grouping(n_clusters)
 
-    # Verificar se há componentes sozinhos e chamar o clustering novamente para esses componentes.
-    # remove os elementos que estão em um grupo de tamanho menor que o k minimo e passa eles para serem reagrupados.
-    # Ajustar a classe VLSIClustering para atender esse propósito. Ela deve receber um campo componentes que pode ser Nulo ou uma lista.
-    # Se for Nulo, então a classe usa range(len(I.blocks)) como lista de blocos, c.c. usa a lista de elementos passados.
-    # Nesse caso, observar que os indices de I são usados para encontrar a posição do bloco no arquivo de instância yal,
-    # Assim, os elementos da lista (caso não nula) serão, também, indices. Nesse caso, os indices estarão saltados, e será necessário uma
-    # abordagem para fazer com que seja possível usar o elemento da lista (que é por si só um indice) para encontrar corretamente o elemento
-    # dentro do arquivo de maneira correta. Pois não poderemos seguir sequecialmente, mas conforme os indices aparecem.
- 
+    print(groups, '\n')
     groups_copy = groups.copy()
 
     # Posicionar os grupos de blocos
@@ -62,7 +48,7 @@ def run(instance: str, is_fixed_edge: bool, log_file):
 
     end = time.time()
     duration = end - start
-    image_name = f"i_{instance}_is_fixed_edge_{is_fixed_edge}"
+    image_name = f"i_{instance}_malleable_{is_fixed_edge}"
     name = plot_VLSI(I, range(len(I.block)-1), image_name)
 
     print(f"Instance {instance}.yal resolved in ", duration, " seconds\n\n")
@@ -92,10 +78,9 @@ def main():
     # Abrir arquivo de log para escrita
     with open(log_file_path, 'w') as log_file:
         for instance in instances:
-            #run(instance, True, log_file)
-            run(instance, False, log_file)
-    
+            run(instance, True, log_file)
+            
     return 0
 
 if __name__ == "__main__":
-    main()
+    main() 

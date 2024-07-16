@@ -1,4 +1,5 @@
 import re
+import math
 from VLSI_class import VLSI
 from VLSI_models import VLSI_Block
 from VLSI_models import VLSI_Terminal
@@ -7,7 +8,7 @@ from VLSI_models import VLSI_Network
 def remove_all(list, element):
   return [x for x in list if x!=element]
 
-def read(name:str):
+def read(name:str, is_fixed_edge: True):
 
   I = VLSI()
   comment = False
@@ -70,6 +71,17 @@ def read(name:str):
           if parent :
             I.W = block_width
             I.L = block_length
+            if (is_fixed_edge is False):
+              B.minw = 0
+              B.maxw = math.inf
+              B.minl = 0
+              B.maxl = math.inf
+            else:
+              B.minw = block_width
+              B.maxw = block_width
+              B.minl = block_length
+              B.maxl = block_length
+            
           else:
             B.minw = block_width * I.flex_min
             B.maxw = block_width * I.flex_max

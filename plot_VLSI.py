@@ -8,7 +8,7 @@ from VLSI_class import VLSI
 plt.rcParams['figure.figsize'] = [8, 8]
 plt.rcParams['figure.dpi'] = 100
 
-def plot_VLSI(I: VLSI, S: list[int] = None, instance = 'plot'):
+def plot_VLSI(I: VLSI, S: list[int] = None, image_name = 'plot'):
   
   if S is None:
     S = list(range(len(I.block)))
@@ -31,4 +31,15 @@ def plot_VLSI(I: VLSI, S: list[int] = None, instance = 'plot'):
   # Ajuste de aspecto baseado nas dimensões do VLSI
   ax.set_aspect(I.W / I.L)
 
-  plt.savefig(f'/home/cplex/{instance}_{int(I.hpwl_value)}.png')
+  import math
+  hpwl_str = ''
+  if math.isinf(I.hpwl_value):
+    hpwl_str = "inf"
+  else:
+    hpwl_str = str(int(I.hpwl_value))
+
+
+  name = f'{image_name}_hpwl_{hpwl_str}.png'
+  plt.savefig(f'/home/cplex/{name}')
+  
+  return name

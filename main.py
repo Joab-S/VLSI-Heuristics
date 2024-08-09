@@ -33,17 +33,10 @@ def run(instance: str, is_fixed_edge: bool, log_file):
 
     # Obter grupos de blocos
     groups = clustering.get_groups()
-
-    # Verificar se há componentes sozinhos e chamar o clustering novamente para esses componentes.
-    # remove os elementos que estão em um grupo de tamanho menor que o k minimo e passa eles para serem reagrupados.
-    # Ajustar a classe VLSIClustering para atender esse propósito. Ela deve receber um campo componentes que pode ser Nulo ou uma lista.
-    # Se for Nulo, então a classe usa range(len(I.blocks)) como lista de blocos, c.c. usa a lista de elementos passados.
-    # Nesse caso, observar que os indices de I são usados para encontrar a posição do bloco no arquivo de instância yal,
-    # Assim, os elementos da lista (caso não nula) serão, também, indices. Nesse caso, os indices estarão saltados, e será necessário uma
-    # abordagem para fazer com que seja possível usar o elemento da lista (que é por si só um indice) para encontrar corretamente o elemento
-    # dentro do arquivo de maneira correta. Pois não poderemos seguir sequecialmente, mas conforme os indices aparecem.
  
     groups_copy = groups.copy()
+
+    print(f"Entrou nas posições relativas às {(datetime.datetime.now().astimezone(datetime.timezone(datetime.timedelta(hours=-3)))).strftime('%H:%M')}")
 
     # Posicionar os grupos de blocos
     R = relpos(num_blocks)
@@ -57,7 +50,7 @@ def run(instance: str, is_fixed_edge: bool, log_file):
                                                                  
     print(f"Começando às {(datetime.datetime.now().astimezone(datetime.timezone(datetime.timedelta(hours=-3)))).strftime('%H:%M')}")
 
-    response = Replacer(I, R).placement() #timelimit=timelimit)
+    response = Replacer(I, R).placement(timelimit=5400) #timelimit=timelimit)
     I = response["vlsi"]
 
     end = time.time()
@@ -92,8 +85,8 @@ def main():
     # Abrir arquivo de log para escrita
     with open(log_file_path, 'w') as log_file:
         for instance in instances:
-            #run(instance, True, log_file)
-            run(instance, False, log_file)
+            run(instance, True, log_file)
+            #run(instance, False, log_file)
     
     return 0
 

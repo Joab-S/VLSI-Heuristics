@@ -24,7 +24,7 @@ def plot_VLSI(I: VLSI, S: list[int] = None, image_name = 'plot'):
   for j in S:
     B = I.block[j]
     ax.add_patch(Rectangle(xy=(B.x, B.y), width=B.w, height=B.l, angle=0.0, alpha=1, color=palette[j]))
-    plt.annotate(text=B.ID, xy=(B.x + B.w / 2, B.y + B.l / 2), ha='center', va='center')
+    plt.annotate(text=f'{B.ID} ({j})', xy=(B.x + B.w / 2, B.y + B.l / 2), ha='center', va='center')
     for t in B.terminal:
       plt.plot(t.xpos(), t.ypos(), marker='+', color="gray")
 

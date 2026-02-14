@@ -115,7 +115,7 @@ class Replacer:
 
   def solve_model(self, timelimit = 3600):
     opt = SolverFactory('cplex_direct')
-    opt.options['threads'] = 1
+    opt.options['threads'] = 4
     opt.options['timelimit'] = timelimit
     opt.options['lpmethod'] = 3
     results = opt.solve(self.model, tee=False)
@@ -132,33 +132,23 @@ class Replacer:
       self.I.L = self.model.LB[len(self.S)-1].value
       self.I.hpwl_value = self.model.obj()
 
+      # Atualiza as relações horizontais e verticais
       for b in range(len(self.S)-1):
-        for a in range(b):
-          if   (self.model.alpha[a,b].value == 1 and self.model.beta[a,b].value == 1):
-            self.R.H[self.S[a]][self.S[b]] = 1
-          elif (self.model.alpha[a,b].value == 0 and self.model.beta[a,b].value == 0):
-            self.R.H[self.S[b]][self.S[a]] = 1
-          elif (self.model.alpha[a,b].value == 0 and self.model.beta[a,b].value == 1):
-            self.R.V[self.S[a]][self.S[b]] = 1
-          elif (self.model.alpha[a,b].value == 1 and self.model.beta[a,b].value == 0):
-            self.R.V[self.S[b]][self.S[a]] = 1
-    
+          for a in range(b):
+              if self.model.XB[a].value < self.model.XB[b].value:
+                  self.R.H[self.S[a]][self.S[b]] = 1
+              if self.model.YB[a].value < self.model.YB[b].value:
+                  self.R.V[self.S[a]][self.S[b]] = 1
     elif results.solver.termination_condition == TerminationCondition.infeasible:
-      print(" ** Infeasible ** ")
-      self.I.hpwl_value = math.inf
-      self.model.write("model.lp", io_options={'symbolic_solver_labels': True})
-      #exit(0)
+        print(" ** Infeasible ** ")
+        self.I.hpwl_value = math.inf
     else:
-      # Tratamento para outras condições de término
-      print(f"Solver Status: {results.solver.status}")
-      print(f"Termination Condition: {results.solver.termination_condition}")
-      #exit(0)
+        print(f"Solver Status: {results.solver.status}")
+        print(f"Termination Condition: {results.solver.termination_condition}")
 
-    #print(f"hpwl_value: {self.I.hpwl_value}")
-    #return self.I
     return {
-      "vlsi": self.I,
-      "status": results.solver.status,
-      "termination_condition": results.solver.termination_condition,
-      "infeasible": results.solver.termination_condition == TerminationCondition.infeasible
+        "vlsi": self.I,
+        "status": results.solver.status,
+        "termination_condition": results.solver.termination_condition,
+        "infeasible": results.solver.termination_condition == TerminationCondition.infeasible
     }

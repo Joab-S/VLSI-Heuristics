@@ -7,8 +7,9 @@ from plot_VLSI import plot_VLSI
 import time
 import json
 import datetime
+import random
 
-instance = "ami33"
+instance = "ami49"
 is_fixed_edge = True
 I = read(f"yal_instances/{instance}.yal", is_fixed_edge)
 
@@ -18,22 +19,41 @@ print(f"{instance} - Blocks = {num_blocks}, Nets = {len(I.network)}")
 start = time.time()
 
 clustering = VLSI_Clustering_K(I)
-k = clustering.elbow_method(max_k=int((num_blocks-1)))#/2))
+#k = clustering.elbow_method(max_k=int((num_blocks-1)))#/2))
+k = 5
+#clusters = clustering.k_means(6)
+clustering.plot_dendrogram()
+clusters = clustering.hierarchical_clustering(k)
+#clusters = clustering.dbscan()
 
-print(k)
-grupos = clustering.k_means(20)
-print(grupos)
+#clusters = clustering.perform_clustering(k)
+grupos = clusters.get_groups()
+print(f"Para k = {k} temos: {grupos}")
 
-
-print(f"Entrou nas posições relativas às {(datetime.datetime.now().astimezone(datetime.timezone(datetime.timedelta(hours=-3)))).strftime('%H:%M')}")
 
 # Posicionar os grupos de blocos
 R = relpos(num_blocks)
 print(len(grupos), " ", grupos)
-for group in grupos:
-    M = Replacer(I, R, group) 
-    I = M.placement(1800)["vlsi"]
-    R = M.R
+
+clustering.calculate_internal_external_connectivity()
+
+internal_connectivity = clusters.get_normalized_internal_connectivity()
+external_connectivity = clusters.get_normalized_external_connectivity()
+
+
+print("\nForça Interna Normalizada: ", internal_connectivity)
+print("Força Externa Normalizada: ", external_connectivity)
+print('\n')
+
+g = sorted(grupos, key=lambda group: internal_connectivity[grupos.index(group)], reverse=True) # ordena com base na conectividade interna do grupo
+
+# print(clustering.calculate_hpwl())
+
+print(f"Entrou nas posições relativas às {(datetime.datetime.now().astimezone(datetime.timezone(datetime.timedelta(hours=-3)))).strftime('%H:%M')}")
+for group in g:
+  M = Replacer(I, R, group) 
+  I = M.placement(1800)["vlsi"]
+  R = M.R
 # Posicionar os blocos restantes
 print("Posições Relativas completa para os grupos.")
                                                               
@@ -44,10 +64,10 @@ I = response["vlsi"]
 
 end = time.time()
 duration = end - start
-image_name = f"i_{instance}_is_fixed_edge_{is_fixed_edge}"
+image_name = f"i_CH_{instance}_is_fixed_edge_{is_fixed_edge}"
 name = plot_VLSI(I, range(len(I.block)-1), image_name)
 
-print(f"Instance {instance}.yal resolved in ", duration, " seconds\n\n")
+print(f"Instance {instance}.yal resolved in {duration} seconds com hpwl_value = {I.hpwl_value}\n\n")
 print(response)
 
 result = {
@@ -62,3 +82,5 @@ result = {
     "k": k,
     "groups": f"{grupos}"
 }
+
+# Fazer uma análise de centralidade de bloco. O quanto um bloco tem conexões com outros blocos
